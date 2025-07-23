@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import citiesRoutes from './routes/citiesRoutes.js';
 import countryRoutes from './routes/countryRoutes.js';
 import countryLanguageRoutes from './routes/countryLanguageRoutes.js';
@@ -7,6 +8,7 @@ import countryLanguageRoutes from './routes/countryLanguageRoutes.js';
 dotenv.config();
 
 const app = express();
+app.use(cors());
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
