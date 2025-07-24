@@ -1,5 +1,5 @@
 export interface City {
-  id: number;
+  ID: number;
   Name: string; // char(35)
   CountryCode:string;
   District: string; // char(20)
