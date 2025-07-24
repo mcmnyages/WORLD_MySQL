@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TopNav from "./components/layout/TopNav";
 import CountryList from "./pages/CountryList";
 import CitiesList from "./pages/CitiesList";
-import CoutryLanguagesList from "./pages/CountryLangiagesList";
+import CoutryLanguagesList from "./pages/CountryLanguagesList";
+
 
 function App() {
   return (
