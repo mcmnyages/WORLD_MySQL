@@ -25,6 +25,8 @@ export interface Country {
 }
 
 export interface CountryListResponse {
+  success: string;
+  message: string;
   countries: Country[];
   pagination: {
     total: number;

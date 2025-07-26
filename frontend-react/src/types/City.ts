@@ -5,3 +5,15 @@ export interface City {
   District: string; // char(20)
  Population: number; // int
 }
+
+export interface CityResponse {
+  success: boolean;
+  cities: City[];
+  pagination?: {
+    totalCount: number;
+    page: number;
+    limit: number;
+  };
+  message?: string;
+  error?: string;
+}

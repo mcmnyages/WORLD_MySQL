@@ -5,3 +5,23 @@ export interface CountryLanguage{
     IsOfficial:boolean; // boolean
     Percentage:number; // decimal(4,1)
 }
+
+export interface CountryLanguageResponse {
+    success: string;
+    languages: CountryLanguage[];
+    pagination: {
+        totalCount: number;
+        pageSize: number;
+        currentPage: number;
+        totalPages: number;
+    };
+    filters?:{
+        countryCode?: string;
+        language?: string;
+        isOfficial?: boolean;
+        minPercentage?: number;
+        maxPercentage?: number;
+        sort:string;
+        fields:[];
+    }
+}
