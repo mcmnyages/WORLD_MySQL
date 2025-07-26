@@ -1,20 +1,23 @@
 import express from 'express';
-import { 
-    getAllCountries,
-    getCountriesPaginated,
-    getCountryByCode,
-    getCountriesByRegion,
-    getCountriesByLanguage,
-
-} from '../controllers/countryController.js';
+import {  
+     getCountries,
+     getCountriesFlexible,
+     getCountryByCode,
+     getContinents,
+     getRegions,
+     getCountryStats,
+     searchCountries,
+    } from '../controllers/countryController.js';
 const router = express.Router();
 
 
-router.get('/', getAllCountries);
-router.get('/paginated', getCountriesPaginated);
-router.get('/:code', getCountryByCode);
-router.get('/region', getCountriesByRegion);
-router.get('/language', getCountriesByLanguage);
+router.get('/', getCountries);
+router.get('/flexible', getCountriesFlexible);
+router.get('/continents', getContinents);
+router.get('/regions', getRegions);
+router.get('/stats', getCountryStats);
+router.get('/:code', getCountryByCode)
+router.get('/search/:query', searchCountries);
 
 
 export default router;

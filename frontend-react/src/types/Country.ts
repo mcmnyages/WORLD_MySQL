@@ -23,3 +23,12 @@ export interface Country {
   Capital: number | null; // int
   Code2: string; // char(2) — seems you forgot to include this field's full row, but I’m filling it in
 }
+
+export interface CountryListResponse {
+  countries: Country[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+  };
+}
