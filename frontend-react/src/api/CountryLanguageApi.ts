@@ -1,8 +1,8 @@
 import axios from './axiosInstance';
-import type { CountryLanguage } from '../types/CountryLanguage';
+import type { CountryLanguageResponse } from '../types/CountryLanguage';
 
-export const getAllCountryLanguages = async (): Promise<CountryLanguage[]> =>{
-    const response = await axios.get<CountryLanguage[]>('/country-languages');
+export const getAllCountryLanguages = async (): Promise<CountryLanguageResponse> =>{
+    const response = await axios.get<CountryLanguageResponse>('/country-languages');
     console.log('All country languages:', response.data);
     return response.data;
 }
