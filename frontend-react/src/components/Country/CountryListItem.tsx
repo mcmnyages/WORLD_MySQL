@@ -8,7 +8,7 @@ export  default function  CountryListItem ({country}: CountryListItemProps) {
     return(
         <div>
        <li>
-  <strong>{country.Name}</strong><br />
+  Country: <strong>{country.Name}</strong><br />
   Code: {country.Code} <br />
   Continent: {country.Continent} <br />
   Region: {country.Region} <br />

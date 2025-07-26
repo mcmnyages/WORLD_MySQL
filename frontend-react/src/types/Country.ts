@@ -29,8 +29,10 @@ export interface CountryListResponse {
   message: string;
   countries: Country[];
   pagination: {
+    count: number;
+    limit: number;
+    totalPages: number;
     total: number;
     page: number;
-    pageSize: number;
   };
 }
