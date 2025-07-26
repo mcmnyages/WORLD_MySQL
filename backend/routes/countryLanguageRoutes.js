@@ -1,14 +1,13 @@
 import express from 'express';
 import { 
-    getAllCountryLanguages,
-    getAllCountryLanguagesPaginated
+    getCountryLanguages
 
  } from '../controllers/countryLanguageController.js';
 
 
 const router = express.Router();
 
-router.get('/', getAllCountryLanguages);
-router.get('/paginated', getAllCountryLanguagesPaginated);
+router.get('/', getCountryLanguages);
+
 
 export default router;

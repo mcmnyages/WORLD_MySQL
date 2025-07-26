@@ -1,15 +1,11 @@
 import express from 'express';
-import { getAllCities, 
-    getCitiesByCountry, 
-    getCitiesPaginated,
-    getCityByName
+import { 
+    getCities
 } from '../controllers/cityController.js';
 
 const router = express.Router();
 
-router.get('/', getAllCities)
-router.get('/cityByCountryCode', getCitiesByCountry);
-router.get('/paginated', getCitiesPaginated);
-router.get('/cityByName', getCityByName);
+router.get('/', getCities)
+
 
 export default router;
