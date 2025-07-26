@@ -7,7 +7,7 @@ type CityItemProps = {
 export default function CityItem({ city }: CityItemProps) {
   return (
     <li>
-  <strong>{city.Name}</strong><br />
+  City: <strong>{city.Name}</strong><br />
   Country Code: {city.CountryCode} <br />
   District: {city.District} <br />
   Population: {city.Population.toLocaleString()}
