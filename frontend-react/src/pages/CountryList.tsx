@@ -11,7 +11,7 @@ const CountryList: React.FC = () => {
     <ul>
       <p>List of Countries:</p>
       <p>Total: {data?.pagination.total}</p>
-      {data?.countries.map((country)=> (
+      {data?.countries?.map((country)=> (
         <CountryListItem key={country.Code} country={country} />
       ))}
     </ul>

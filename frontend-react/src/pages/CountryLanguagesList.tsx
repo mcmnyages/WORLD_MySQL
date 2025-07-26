@@ -12,10 +12,12 @@ export default function CoutryLanguagesList(){
     return(
         <div>
             <h1>List of Languages</h1>
-            <p>Total: {data?.length}</p>
+            <p>Total: {data?.pagination?.totalCount}</p>
             <ul>
-                {data?.map((countryLanguage) => (
-                    <CountryLanguageItem key={`${countryLanguage.CountryCode}-${countryLanguage.Language}`} countryLanguage={countryLanguage} />
+                {data?.languages?.map((countryLanguage) => (
+                    <CountryLanguageItem
+                     key={`${countryLanguage.CountryCode}-${countryLanguage.Language}`}
+                     countryLanguage={countryLanguage} />
                 ))}
             </ul>
         </div>

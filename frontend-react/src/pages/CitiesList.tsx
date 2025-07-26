@@ -14,14 +14,13 @@ export default function CitiesList(){
     if(error) return <p>Error loading cities</p>
     return(
         <div>
-            
-                <p>List of Cities:</p>
-                <p>Total: {data?.length}</p>
-                
-                <p>Each city is represented by the following fields:</p>
-                <p>Name - CountryCode - District - Population</p>
-               {
-                data?.map(city=>(
+            <p>List of Cities:</p>
+            <p>Total: {data?.pagination?.totalCount}</p>
+
+            <p>Each city is represented by the following fields:</p>
+            <p>Name - CountryCode - District - Population</p>
+           {
+            data?.cities?.map(city=>(
                     <CityItem key={city.ID} city={city} />
                 ))
                }
