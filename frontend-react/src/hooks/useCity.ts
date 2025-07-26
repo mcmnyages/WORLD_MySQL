@@ -1,10 +1,10 @@
 import {useQuery} from '@tanstack/react-query';
-import {getAllCities} from '../api/cityApi';
-import type {City} from '../types/City';
+import {getCities} from '../api/cityApi';
+import type {CityResponse} from '../types/City';
 
 export const useCities = () =>{
-    return useQuery<City[]>({
+    return useQuery<CityResponse>({
         queryKey: ['AllCities'],
-        queryFn: getAllCities,
+        queryFn: getCities,
     })
 }
