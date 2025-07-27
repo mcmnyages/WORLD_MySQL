@@ -1,0 +1,14 @@
+/* themes/base.css */
+:root {
+  --bg: white;
+  --text: black;
+  --primary: #4f46e5; /* Indigo */
+  --secondary: #9333ea; /* Purple */
+  --bg-image: none;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  background-image: var(--bg-image);
+}

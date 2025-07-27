@@ -1,0 +1,12 @@
+.theme-ocean {
+  --bg: #000;
+  --text: #fff;
+  --primary: #0ea5e9;
+  --secondary: #f472b6;
+  --bg-image: url('/images/ocean-bg.jpg');
+}
+body.theme-ocean {
+  background-color: var(--bg);
+  color: var(--text);
+  background-image: var(--bg-image);
+}

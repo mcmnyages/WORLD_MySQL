@@ -1,0 +1,11 @@
+.theme-space {
+  --bg: #000;
+  --text: #fff;
+  --primary: #0ea5e9;
+  --secondary: #f472b6;
+  --bg-image: url('/images/space.jpg');
+  --bg-image-size: cover;
+  --bg-image-position: center;
+  --bg-image-repeat: no-repeat;
+  --bg-image-attachment: fixed;
+}
