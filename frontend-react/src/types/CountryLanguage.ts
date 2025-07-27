@@ -10,9 +10,9 @@ export interface CountryLanguageResponse {
     success: string;
     languages: CountryLanguage[];
     pagination: {
-        totalCount: number;
-        pageSize: number;
-        currentPage: number;
+        count: number;
+        total: number;
+        page: number;
         totalPages: number;
     };
     filters?:{
