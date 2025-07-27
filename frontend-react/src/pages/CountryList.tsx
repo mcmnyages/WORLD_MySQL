@@ -20,9 +20,9 @@ const CountryList: React.FC = () => {
   const goPrev = () => setPage((prev) => Math.max(prev - 1, 1));
   const goNext = () => {
     if (data?.pagination?.totalPages) {
-    setPage((prev) => Math.min(prev + 1, data.pagination.totalPages));
+      setPage((next) => Math.min(next + 1, data.pagination.totalPages));
+    }
   }
-}
 
   return (
     <div>
