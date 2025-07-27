@@ -9,8 +9,8 @@ import CoutryLanguagesList from "./pages/CountryLanguagesList";
 function App() {
   return (
     <BrowserRouter>
-      <div className="p-4">
-        <TopNav />
+    <TopNav />
+      <div className="p-4 mt-16">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/cities" element={<CitiesList />} />
