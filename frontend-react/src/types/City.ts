@@ -10,9 +10,11 @@ export interface CityResponse {
   success: boolean;
   cities: City[];
   pagination?: {
-    totalCount: number;
+    count: number;
+    total: number;
     page: number;
     limit: number;
+    totalPages: number;
   };
   message?: string;
   error?: string;
