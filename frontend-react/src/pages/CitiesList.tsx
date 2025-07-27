@@ -1,12 +1,14 @@
 import  { useState } from 'react';
 import {useCities} from '../hooks/useCity';
 import CityItem from '../components/City/CityItem';
+import { useSearch } from '../hooks/useSearch';
+import SearchInput from '../components/SearchInput'
 
 
 export default function CitiesList(){
 
     const [page, setPage] = useState(1);
-
+    const { search, debouncedSearch, handleSearchChange } = useSearch();
 
     const goPrev = () => setPage((prev) => Math.max(prev - 1, 1));
             const goNext = () => {
@@ -22,7 +24,7 @@ export default function CitiesList(){
         }
     }
 
-    const {isLoading, error, data} = useCities({ page, pageSize: 10     });
+    const {isLoading, error, data} = useCities({ page, pageSize: 10 ,name: debouncedSearch });
 
 
     if(isLoading) return <p>Wait as we Fetch the Cities, Loading...</p>;
@@ -34,6 +36,14 @@ export default function CitiesList(){
             <p>Total: {data?.pagination?.total}</p>
 
             <p>Each city is represented by the following fields:</p>
+             <SearchInput
+               value={search}
+               onChange={(e) => {
+                 handleSearchChange(e);
+                 setPage(1); // Reset page when searching
+               }}
+               placeholder="Search cities..."
+             />
             <p>Name - CountryCode - District - Population</p>
            {
             data?.cities?.map(city=>(
