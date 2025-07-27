@@ -3,6 +3,7 @@ import {useCities} from '../hooks/useCity';
 import CityItem from '../components/City/CityItem';
 import { useSearch } from '../hooks/useSearch';
 import SearchInput from '../components/SearchInput'
+import Pagination from '../components/ui/Pagination/Pagination';
 
 
 export default function CitiesList(){
@@ -10,20 +11,7 @@ export default function CitiesList(){
     const [page, setPage] = useState(1);
     const { search, debouncedSearch, handleSearchChange } = useSearch();
 
-    const goPrev = () => setPage((prev) => Math.max(prev - 1, 1));
-            const goNext = () => {
-                if (data?.pagination?.totalPages) {
-                    setPage((next) => Math.min(next + 1, data?.pagination?.totalPages ?? 1));
-                }
-            };
-
-    const goFirst = () => setPage(1);
-    const goLast = () => {
-        if (data?.pagination?.totalPages) {
-            setPage(data.pagination.totalPages ?? 1);
-        }
-    }
-
+    
     const {isLoading, error, data} = useCities({ page, pageSize: 10 ,name: debouncedSearch });
 
 
@@ -39,8 +27,8 @@ export default function CitiesList(){
              <SearchInput
                value={search}
                onChange={(e) => {
-                 handleSearchChange(e);
-                 setPage(1); // Reset page when searching
+                handleSearchChange(e);
+                setPage(1); // Reset page when searching
                }}
                placeholder="Search cities..."
              />
@@ -52,28 +40,16 @@ export default function CitiesList(){
                }
                <br />
 
-            <div>
-                <button onClick={goFirst} disabled={page === 1}>
-                    First
-                </button>
-                <button onClick={goPrev} disabled={page === 1}>
-                    Prev
-                </button>
-
-                <span>
-                    Page {page} of {data?.pagination?.totalPages}
-                </span>
-
-                <button onClick={goNext} disabled={page === (data?.pagination?.totalPages ?? 1)}>
-                    Next
-                </button>
-                <button onClick={goLast} disabled={page === (data?.pagination?.totalPages ?? 1)}>
-                    Last
-                </button>
-                {isLoading && <p>Updating...</p>}
-                <br />
-
-            </div>
+            <Pagination
+                currentPage={page}
+                totalPages={data?.pagination?.totalPages ?? 1}
+                onPageChange={setPage}
+                isLoading={isLoading}
+                pageSize={10}
+                onPageSizeChange={(size) => console.log(`Page size changed to: ${size}`)}
+            />
+            <br />
+            
         </div>
     )
 }
