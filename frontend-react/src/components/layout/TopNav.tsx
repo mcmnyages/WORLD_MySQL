@@ -23,7 +23,10 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className={`text-2xl font-bold ${isScrolled ? 'text-green-800' : 'text-blue-600'}`}>
-          <img src="../worldglobe.svg" alt="world logo" className='h-16 w-16' />
+          <Link to="/" className="flex items-center">
+            World Facts
+          <img src="/images/worldglobetransparent.svg" alt="world logo" className='h-16 w-16' />
+          </Link>
           </div>
         <ul className={`hidden md:flex space-x-6 ${isScrolled ? 'text-white' : 'text-green-500'}`}>
           <Link className="hover:text-blue-500 cursor-pointer" to="/">Home</Link>
