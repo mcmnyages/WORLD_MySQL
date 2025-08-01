@@ -5,6 +5,7 @@ import {
      getCountryByCode,
      getContinents,
      getRegions,
+     getWorldData,
      getCountryStats,
      searchCountries,
     } from '../controllers/countryController.js';
@@ -12,6 +13,7 @@ const router = express.Router();
 
 
 router.get('/', getCountries);
+router.get('/all', getWorldData);
 router.get('/flexible', getCountriesFlexible);
 router.get('/continents', getContinents);
 router.get('/regions', getRegions);

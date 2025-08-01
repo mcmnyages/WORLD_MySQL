@@ -270,6 +270,533 @@ export async function getCountries(req, res) {
   }
 }
 
+
+export async function getWorldData(req, res) {
+  try {
+    const {
+      // Country filters
+      region,
+      continent,
+      countryName,
+      countryCode,
+      localName,
+      governmentForm,
+      headOfState,
+      minPopulation,
+      maxPopulation,
+      minSurfaceArea,
+      maxSurfaceArea,
+      minLifeExpectancy,
+      maxLifeExpectancy,
+      minGNP,
+      maxGNP,
+      minIndepYear,
+      maxIndepYear,
+      
+      // City filters
+      cityName,
+      district,
+      minCityPopulation,
+      maxCityPopulation,
+      
+      // Language filters
+      language,
+      isOfficial, // 'true', 'false', or undefined for both
+      minLanguagePercentage,
+      maxLanguagePercentage,
+      
+      // Data options
+      includeCapitalOnly, // 'true' to only include capital cities
+      includeOfficialLanguagesOnly, // 'true' to only include official languages
+      groupBy, // 'country', 'city', 'language' - affects how data is structured
+      
+      // Field selection
+      fields,
+      
+      // Sorting and pagination
+      sort = 'country_name_asc',
+      page = '1',
+      limit = '20'
+    } = req.query;
+
+    // Define available fields for security
+    const availableFields = {
+      country: [
+        'co.Code as country_code', 'co.Name as country_name', 'co.Continent as continent',
+        'co.Region as region', 'co.SurfaceArea as surface_area', 'co.IndepYear as independence_year',
+        'co.Population as country_population', 'co.LifeExpectancy as life_expectancy',
+        'co.GNP as gnp', 'co.GNPOld as gnp_old', 'co.LocalName as local_name',
+        'co.GovernmentForm as government_form', 'co.HeadOfState as head_of_state',
+        'co.Capital as capital_id', 'co.Code2 as country_code2'
+      ],
+      city: [
+        'ci.ID as city_id', 'ci.Name as city_name', 'ci.CountryCode as city_country_code',
+        'ci.District as district', 'ci.Population as city_population'
+      ],
+      capital: [
+        'cap.Name as capital_name', 'cap.Population as capital_population'
+      ],
+      language: [
+        'cl.Language as language_name', 'cl.IsOfficial as is_official',
+        'cl.Percentage as language_percentage'
+      ]
+    };
+
+    // Handle field selection
+    let selectedFields = [
+      ...availableFields.country,
+      ...availableFields.city,
+      ...availableFields.capital,
+      ...availableFields.language
+    ];
+
+    if (fields && fields.trim() !== '') {
+      const requestedCategories = fields.split(',').map(f => f.trim());
+      selectedFields = [];
+      
+      requestedCategories.forEach(category => {
+        if (availableFields[category]) {
+          selectedFields.push(...availableFields[category]);
+        }
+      });
+      
+      // If no valid categories provided, use all fields
+      if (selectedFields.length === 0) {
+        selectedFields = [
+          ...availableFields.country,
+          ...availableFields.city,
+          ...availableFields.capital,
+          ...availableFields.language
+        ];
+      }
+    }
+
+    // Build the SELECT clause
+    const selectClause = selectedFields.join(', ');
+    
+    // Base query with joins
+    let sql = `
+      SELECT DISTINCT ${selectClause}
+      FROM country co
+      LEFT JOIN city cap ON co.Capital = cap.ID
+      LEFT JOIN city ci ON co.Code = ci.CountryCode
+      LEFT JOIN countrylanguage cl ON co.Code = cl.CountryCode
+    `;
+
+    // Handle special cases
+    if (includeCapitalOnly === 'true') {
+      sql = sql.replace('LEFT JOIN city ci ON co.Code = ci.CountryCode', 
+                       'LEFT JOIN city ci ON co.Capital = ci.ID');
+    }
+
+    if (includeOfficialLanguagesOnly === 'true') {
+      sql = sql.replace('LEFT JOIN countrylanguage cl ON co.Code = cl.CountryCode',
+                       'LEFT JOIN countrylanguage cl ON co.Code = cl.CountryCode AND cl.IsOfficial = "T"');
+    }
+
+    const conditions = [];
+    const params = [];
+
+    // Helper function to add conditions
+    const addCondition = (condition, value) => {
+      conditions.push(condition);
+      params.push(value);
+    };
+
+    // Country filters
+    if (region && region.trim() !== '') {
+      addCondition('co.Region = ?', region.trim());
+    }
+
+    if (continent && continent.trim() !== '') {
+      addCondition('co.Continent = ?', continent.trim());
+    }
+
+    if (countryName && countryName.trim() !== '') {
+      addCondition('co.Name LIKE ?', `%${countryName.trim()}%`);
+    }
+
+    if (countryCode && countryCode.trim() !== '') {
+      if (countryCode.trim().length === 3) {
+        addCondition('co.Code = ?', countryCode.trim().toUpperCase());
+      } else {
+        addCondition('co.Code LIKE ?', `%${countryCode.trim().toUpperCase()}%`);
+      }
+    }
+
+    if (localName && localName.trim() !== '') {
+      addCondition('co.LocalName LIKE ?', `%${localName.trim()}%`);
+    }
+
+    if (governmentForm && governmentForm.trim() !== '') {
+      addCondition('co.GovernmentForm LIKE ?', `%${governmentForm.trim()}%`);
+    }
+
+    if (headOfState && headOfState.trim() !== '') {
+      addCondition('co.HeadOfState LIKE ?', `%${headOfState.trim()}%`);
+    }
+
+    // Country numeric filters
+    if (minPopulation && !isNaN(minPopulation)) {
+      addCondition('co.Population >= ?', parseInt(minPopulation, 10));
+    }
+
+    if (maxPopulation && !isNaN(maxPopulation)) {
+      addCondition('co.Population <= ?', parseInt(maxPopulation, 10));
+    }
+
+    if (minSurfaceArea && !isNaN(minSurfaceArea)) {
+      addCondition('co.SurfaceArea >= ?', parseFloat(minSurfaceArea));
+    }
+
+    if (maxSurfaceArea && !isNaN(maxSurfaceArea)) {
+      addCondition('co.SurfaceArea <= ?', parseFloat(maxSurfaceArea));
+    }
+
+    if (minLifeExpectancy && !isNaN(minLifeExpectancy)) {
+      addCondition('co.LifeExpectancy >= ?', parseFloat(minLifeExpectancy));
+    }
+
+    if (maxLifeExpectancy && !isNaN(maxLifeExpectancy)) {
+      addCondition('co.LifeExpectancy <= ?', parseFloat(maxLifeExpectancy));
+    }
+
+    if (minGNP && !isNaN(minGNP)) {
+      addCondition('co.GNP >= ?', parseFloat(minGNP));
+    }
+
+    if (maxGNP && !isNaN(maxGNP)) {
+      addCondition('co.GNP <= ?', parseFloat(maxGNP));
+    }
+
+    if (minIndepYear && !isNaN(minIndepYear)) {
+      addCondition('co.IndepYear >= ?', parseInt(minIndepYear, 10));
+    }
+
+    if (maxIndepYear && !isNaN(maxIndepYear)) {
+      addCondition('co.IndepYear <= ?', parseInt(maxIndepYear, 10));
+    }
+
+    // City filters
+    if (cityName && cityName.trim() !== '') {
+      addCondition('ci.Name LIKE ?', `%${cityName.trim()}%`);
+    }
+
+    if (district && district.trim() !== '') {
+      addCondition('ci.District LIKE ?', `%${district.trim()}%`);
+    }
+
+    if (minCityPopulation && !isNaN(minCityPopulation)) {
+      addCondition('ci.Population >= ?', parseInt(minCityPopulation, 10));
+    }
+
+    if (maxCityPopulation && !isNaN(maxCityPopulation)) {
+      addCondition('ci.Population <= ?', parseInt(maxCityPopulation, 10));
+    }
+
+    // Language filters
+    if (language && language.trim() !== '') {
+      addCondition('cl.Language LIKE ?', `%${language.trim()}%`);
+    }
+
+    if (isOfficial === 'true') {
+      addCondition('cl.IsOfficial = ?', 'T');
+    } else if (isOfficial === 'false') {
+      addCondition('cl.IsOfficial = ?', 'F');
+    }
+
+    if (minLanguagePercentage && !isNaN(minLanguagePercentage)) {
+      addCondition('cl.Percentage >= ?', parseFloat(minLanguagePercentage));
+    }
+
+    if (maxLanguagePercentage && !isNaN(maxLanguagePercentage)) {
+      addCondition('cl.Percentage <= ?', parseFloat(maxLanguagePercentage));
+    }
+
+    // Add WHERE clause if conditions exist
+    if (conditions.length > 0) {
+      sql += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    // Enhanced sorting options
+    const validSorts = {
+      'country_name_asc': 'co.Name ASC',
+      'country_name_desc': 'co.Name DESC',
+      'country_population_asc': 'co.Population ASC',
+      'country_population_desc': 'co.Population DESC',
+      'surface_area_asc': 'co.SurfaceArea ASC',
+      'surface_area_desc': 'co.SurfaceArea DESC',
+      'life_expectancy_asc': 'co.LifeExpectancy ASC',
+      'life_expectancy_desc': 'co.LifeExpectancy DESC',
+      'gnp_asc': 'co.GNP ASC',
+      'gnp_desc': 'co.GNP DESC',
+      'independence_year_asc': 'co.IndepYear ASC',
+      'independence_year_desc': 'co.IndepYear DESC',
+      'city_name_asc': 'ci.Name ASC',
+      'city_name_desc': 'ci.Name DESC',
+      'city_population_asc': 'ci.Population ASC',
+      'city_population_desc': 'ci.Population DESC',
+      'language_name_asc': 'cl.Language ASC',
+      'language_name_desc': 'cl.Language DESC',
+      'language_percentage_asc': 'cl.Percentage ASC',
+      'language_percentage_desc': 'cl.Percentage DESC',
+      'continent_asc': 'co.Continent ASC',
+      'continent_desc': 'co.Continent DESC'
+    };
+
+    const orderBy = validSorts[sort] || 'co.Name ASC';
+    sql += ` ORDER BY ${orderBy}`;
+
+    // Pagination
+    const pageInt = Math.max(1, parseInt(page, 10) || 1);
+    const limitInt = Math.max(1, Math.min(100, parseInt(limit, 10) || 20));
+    const offset = (pageInt - 1) * limitInt;
+
+    sql += ` LIMIT ${offset}, ${limitInt}`;
+
+    console.log('[getWorldData] SQL:', sql);
+    console.log('[getWorldData] Params:', params);
+
+    // Execute main query with retry logic
+    let rows;
+    try {
+      [rows] = await pool.execute(sql, params);
+    } catch (executeError) {
+      console.error('[getWorldData] Main query error:', executeError);
+      
+      // Retry logic for connection issues
+      if (executeError.code === 'ER_MALFORMED_PACKET' || executeError.code === 'ECONNRESET') {
+        console.log('[getWorldData] Retrying query due to connection issue...');
+        try {
+          [rows] = await pool.execute(sql, params);
+        } catch (retryError) {
+          console.error('[getWorldData] Retry failed:', retryError);
+          throw retryError;
+        }
+      } else {
+        throw executeError;
+      }
+    }
+
+    // Get total count for pagination
+    let totalCount = 0;
+    try {
+      let countSql = `
+        SELECT COUNT(DISTINCT CONCAT(co.Code, '-', IFNULL(ci.ID, ''), '-', IFNULL(cl.Language, ''))) as total
+        FROM country co
+        LEFT JOIN city cap ON co.Capital = cap.ID
+        LEFT JOIN city ci ON co.Code = ci.CountryCode
+        LEFT JOIN countrylanguage cl ON co.Code = cl.CountryCode
+      `;
+
+      // Apply same special cases to count query
+      if (includeCapitalOnly === 'true') {
+        countSql = countSql.replace('LEFT JOIN city ci ON co.Code = ci.CountryCode', 
+                                   'LEFT JOIN city ci ON co.Capital = ci.ID');
+      }
+
+      if (includeOfficialLanguagesOnly === 'true') {
+        countSql = countSql.replace('LEFT JOIN countrylanguage cl ON co.Code = cl.CountryCode',
+                                   'LEFT JOIN countrylanguage cl ON co.Code = cl.CountryCode AND cl.IsOfficial = "T"');
+      }
+
+      const countParams = [...params];
+      
+      if (conditions.length > 0) {
+        countSql += ' WHERE ' + conditions.join(' AND ');
+      }
+      
+      console.log('[getWorldData] Count SQL:', countSql);
+      console.log('[getWorldData] Count Params:', countParams);
+      
+      const [countResult] = await pool.execute(countSql, countParams);
+      totalCount = countResult[0]?.total || 0;
+    } catch (countErr) {
+      console.error('[getWorldData] Count query error:', countErr);
+      // Fallback estimation
+      totalCount = rows.length === limitInt ? (pageInt * limitInt) + 1 : (pageInt - 1) * limitInt + rows.length;
+    }
+
+    // Get summary statistics
+    let statistics = {};
+    try {
+      let statsSql = `
+        SELECT 
+          COUNT(DISTINCT co.Code) as countries_count,
+          COUNT(DISTINCT ci.ID) as cities_count,
+          COUNT(DISTINCT cl.Language) as languages_count,
+          AVG(co.Population) as avg_country_population,
+          SUM(co.Population) as total_population,
+          AVG(co.LifeExpectancy) as avg_life_expectancy,
+          COUNT(DISTINCT co.Continent) as continents_count,
+          AVG(ci.Population) as avg_city_population,
+          AVG(cl.Percentage) as avg_language_percentage
+        FROM country co
+        LEFT JOIN city cap ON co.Capital = cap.ID
+        LEFT JOIN city ci ON co.Code = ci.CountryCode
+        LEFT JOIN countrylanguage cl ON co.Code = cl.CountryCode
+      `;
+
+      if (conditions.length > 0) {
+        statsSql += ' WHERE ' + conditions.join(' AND ');
+      }
+
+      const [statsResult] = await pool.execute(statsSql, params);
+      statistics = statsResult[0] || {};
+      
+      // Round numbers for better readability
+      Object.keys(statistics).forEach(key => {
+        if (typeof statistics[key] === 'number' && statistics[key] !== null) {
+          statistics[key] = Math.round(statistics[key] * 100) / 100;
+        }
+      });
+    } catch (statsErr) {
+      console.error('[getWorldData] Statistics query error:', statsErr);
+      statistics = { error: 'Unable to calculate statistics' };
+    }
+
+    // Process data based on groupBy parameter
+    let processedData = rows;
+    if (groupBy) {
+      processedData = processDataByGroup(rows, groupBy);
+    }
+
+    // Response
+    res.json({
+      success: true,
+      filters: {
+        // Country filters
+        region: region || null,
+        continent: continent || null,
+        countryName: countryName || null,
+        countryCode: countryCode || null,
+        localName: localName || null,
+        governmentForm: governmentForm || null,
+        headOfState: headOfState || null,
+        minPopulation: minPopulation || null,
+        maxPopulation: maxPopulation || null,
+        minSurfaceArea: minSurfaceArea || null,
+        maxSurfaceArea: maxSurfaceArea || null,
+        minLifeExpectancy: minLifeExpectancy || null,
+        maxLifeExpectancy: maxLifeExpectancy || null,
+        minGNP: minGNP || null,
+        maxGNP: maxGNP || null,
+        minIndepYear: minIndepYear || null,
+        maxIndepYear: maxIndepYear || null,
+        
+        // City filters
+        cityName: cityName || null,
+        district: district || null,
+        minCityPopulation: minCityPopulation || null,
+        maxCityPopulation: maxCityPopulation || null,
+        
+        // Language filters
+        language: language || null,
+        isOfficial: isOfficial || null,
+        minLanguagePercentage: minLanguagePercentage || null,
+        maxLanguagePercentage: maxLanguagePercentage || null,
+        
+        // Options
+        includeCapitalOnly: includeCapitalOnly || null,
+        includeOfficialLanguagesOnly: includeOfficialLanguagesOnly || null,
+        groupBy: groupBy || null,
+        
+        sort,
+        fields: fields || null
+      },
+      pagination: {
+        page: pageInt,
+        limit: limitInt,
+        count: rows.length,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limitInt),
+        hasNext: pageInt < Math.ceil(totalCount / limitInt),
+        hasPrevious: pageInt > 1
+      },
+      statistics,
+      data: processedData
+    });
+
+  } catch (err) {
+    console.error('[getWorldData] ERROR:', err);
+    res.status(500).json({ 
+      success: false,
+      error: 'Server error',
+      message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    });
+  }
+}
+
+// Helper function to process data based on groupBy parameter
+function processDataByGroup(rows, groupBy) {
+  if (!groupBy || rows.length === 0) return rows;
+
+  const grouped = {};
+
+  rows.forEach(row => {
+    let key;
+    switch (groupBy) {
+      case 'country':
+        key = row.country_code;
+        break;
+      case 'city':
+        key = row.city_id || 'no_city';
+        break;
+      case 'language':
+        key = row.language_name || 'no_language';
+        break;
+      default:
+        return rows;
+    }
+
+    if (!grouped[key]) {
+      grouped[key] = [];
+    }
+    grouped[key].push(row);
+  });
+
+  return grouped;
+}
+
+// Additional helper function to get filter options
+export async function getWorldFilterOptions(req, res) {
+  try {
+    const [continentsResult] = await pool.execute('SELECT DISTINCT Continent FROM country ORDER BY Continent');
+    const [regionsResult] = await pool.execute('SELECT DISTINCT Region FROM country ORDER BY Region');
+    const [languagesResult] = await pool.execute('SELECT DISTINCT Language FROM countrylanguage ORDER BY Language LIMIT 100');
+    const [governmentFormsResult] = await pool.execute('SELECT DISTINCT GovernmentForm FROM country WHERE GovernmentForm IS NOT NULL ORDER BY GovernmentForm');
+
+    res.json({
+      success: true,
+      options: {
+        continents: continentsResult.map(row => row.Continent),
+        regions: regionsResult.map(row => row.Region),
+        languages: languagesResult.map(row => row.Language),
+        governmentForms: governmentFormsResult.map(row => row.GovernmentForm),
+        sortOptions: [
+          { value: 'country_name_asc', label: 'Country Name (A-Z)' },
+          { value: 'country_name_desc', label: 'Country Name (Z-A)' },
+          { value: 'country_population_asc', label: 'Country Population (Low to High)' },
+          { value: 'country_population_desc', label: 'Country Population (High to Low)' },
+          { value: 'city_population_asc', label: 'City Population (Low to High)' },
+          { value: 'city_population_desc', label: 'City Population (High to Low)' },
+          { value: 'language_percentage_desc', label: 'Language Percentage (High to Low)' },
+          { value: 'continent_asc', label: 'Continent (A-Z)' }
+        ],
+        fieldCategories: ['country', 'city', 'capital', 'language']
+      }
+    });
+
+  } catch (err) {
+    console.error('[getWorldFilterOptions] ERROR:', err);
+    res.status(500).json({ 
+      success: false,
+      error: 'Server error',
+      message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    });
+  }
+}
+
 /**
  * GET /api/countries/flexible
  * Alternative endpoint for more flexible querying with JSON-based filters
