@@ -14,6 +14,7 @@ const router = express.Router();
 
 router.get('/', getCountries);
 router.get('/all', getWorldData);
+router.get('/filter-options', getWorldData);
 router.get('/flexible', getCountriesFlexible);
 router.get('/continents', getContinents);
 router.get('/regions', getRegions);
