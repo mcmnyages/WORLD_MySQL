@@ -2,11 +2,12 @@
   "devDependencies": {
     "concurrently": "^9.2.0"
   },
-  
   "scripts": {
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
     "backend": "cd backend && npm run dev",
     "frontend": "cd frontend-react && npm run dev"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1"
   }
-
 }
