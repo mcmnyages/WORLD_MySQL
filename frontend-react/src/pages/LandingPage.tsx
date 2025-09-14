@@ -104,27 +104,14 @@ export default function LandingPage() {
         onGlobeClick={handleInteraction}
         onZoom={handleInteraction}
         animateIn={true}
+        waitForGlobeReady={true}
       />
       {showOverlay && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white',
-            textAlign: 'center',
-            pointerEvents: 'none',
-            zIndex: 1,
-            background: 'rgba(0,0,0,0.5)',
-            padding: '20px',
-            borderRadius: '10px',
-          }}
-        >
-          <h1>Welcome to Our Global Explorer</h1>
-          <p>Interact with the globe to explore cities around the world.</p>
-          <p>The globe auto-rotates, simulating day and night transitions.</p>
-        </div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-center pointer-events-none z-10 bg-black/50 p-5 rounded-lg">
+  <h1 className="text-2xl font-bold">Welcome to World Data</h1>
+  <p>Interact with the globe to explore cities around the world.</p>
+  <p>The globe auto-rotates, simulating day and night transitions.</p>
+</div>
       )}
     </div>
   );

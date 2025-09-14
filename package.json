@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
-    "react-globe.gl": "^2.35.0",
-    "three": "^0.179.1"
+    "react-globe.gl": "^2.36.0",
+    "three": "^0.179.1",
+    "tippy.js": "^6.3.7"
   }
 }
