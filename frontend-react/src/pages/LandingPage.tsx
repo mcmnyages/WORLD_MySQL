@@ -1,11 +1,19 @@
 import { useState } from 'react';
 import ReactGlobe from 'react-globe.gl';
-// import 'tippy.js/dist/tippy.css'; // Optional: for tooltip styling
-// import 'tippy.js/animations/scale.css'; // Optional: for tooltip animations
+import * as THREE from 'three';
+
+// Define TypeScript interface for marker data
+interface Marker {
+  id: string;
+  city: string;
+  country: string;
+  coordinates: [number, number];
+  population: string;
+}
 
 export default function LandingPage() {
-  // More realistic city data for markers on the globe
-  const markers = [
+  // Markers with Nairobi included
+  const markers: Marker[] = [
     { id: 'marker1', city: 'Tokyo', country: 'Japan', coordinates: [35.6762, 139.6503], population: '37.4M' },
     { id: 'marker2', city: 'Delhi', country: 'India', coordinates: [28.6139, 77.2090], population: '31.4M' },
     { id: 'marker3', city: 'Shanghai', country: 'China', coordinates: [31.2304, 121.4737], population: '27.1M' },
@@ -31,96 +39,92 @@ export default function LandingPage() {
     { id: 'marker23', city: 'Moscow', country: 'Russia', coordinates: [55.7558, 37.6173], population: '12.5M' },
     { id: 'marker24', city: 'Los Angeles', country: 'USA', coordinates: [34.0522, -118.2437], population: '3.9M' },
     { id: 'marker25', city: 'Cape Town', country: 'South Africa', coordinates: [-33.9249, 18.4241], population: '4.7M' },
+    { id: 'marker26', city: 'Nairobi', country: 'Kenya', coordinates: [-1.2921, 36.8219], population: '5.5M' }, // Corrected latitude
   ];
 
-  // State to capture globe instance and control overlay visibility
-  const [globe, setGlobe] = useState<GlobeInstance | null>(null);
-  const [showOverlay, setShowOverlay] = useState(true);
+  // State for globe instance and overlay visibility
+  const [globeInstance, setGlobeInstance] = useState<any>(null); // Use any for react-globe.gl instance
+  const [showOverlay, setShowOverlay] = useState<boolean>(true);
 
-  // Globe configuration options
-  const globeOptions = {
-    globeImageUrl: '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg', // Daytime texture
-    emissiveImageUrl: '//unpkg.com/three-globe/example/img/earth-night.jpg', // Nighttime lights
-    emissiveIntensity: 0.8, // Intensity of nighttime glow
-    bumpImageUrl: '//unpkg.com/three-globe/example/img/earth-topology.jpg', // Bump map for terrain
-    backgroundImageUrl: '//unpkg.com/three-globe/example/img/night-sky.png', // Starry background
-    backgroundColor: 'rgba(0,0,0,0)', // Transparent background to show stars
-    atmosphereColor: 'lightblue',
-    atmosphereAltitude: 0.15,
-    pointRadius: 0.3, // Size of marker points
-    pointAltitude: 0.01, // Height of markers above globe surface (lower for realism)
-    cameraRotateSpeed: 0.5,
-    focusAnimationDuration: 2000,
+  // Globe configuration
+  const dayTextureUrl = '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg';
+  const nightTextureUrl = '//unpkg.com/three-globe/example/img/earth-night.jpg';
+  const bumpTextureUrl = '//unpkg.com/three-globe/example/img/earth-topology.jpg';
+  const backgroundImageUrl = '//unpkg.com/three-globe/example/img/night-sky.png';
+
+  const handleGlobeReady = (globe: any) => {
+    setGlobeInstance(globe);
+
+    // Enable auto-rotation
+    const controls = globe.controls();
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.5; // Speed in degrees per frame
+    controls.enableZoom = true;
+    controls.update();
+
+    // Hide overlay on interaction start (drag, zoom, etc.)
+    controls.addEventListener('start', () => setShowOverlay(false));
+
+    // Setup custom globe material for day/night effects
+    const material = globe.globeMaterial() as THREE.MeshPhongMaterial;
+    const textureLoader = new THREE.TextureLoader();
+    material.map = textureLoader.load(dayTextureUrl); // Explicitly set day texture
+    material.emissiveMap = textureLoader.load(nightTextureUrl); // Night lights
+    material.emissive = new THREE.Color(0xffffff);
+    material.emissiveIntensity = 0.8;
+    material.bumpMap = textureLoader.load(bumpTextureUrl);
+    material.bumpScale = 0.05;
+    material.needsUpdate = true;
   };
 
-  interface Marker {
-    id: string;
-    city: string;
-    country: string;
-    coordinates: [number, number];
-    population: string;
-  }
-
-  interface GlobeInstance {
-    controls: () => {
-      autoRotate: boolean;
-      autoRotateSpeed: number;
-      addEventListener: (event: string, handler: () => void) => void;
-    };
-  }
-
-  const handleGlobeReady = (globeInstance: GlobeInstance) => {
-    setGlobe(globeInstance);
-    // Enable auto-rotation
-    globeInstance.controls().autoRotate = true;
-    globeInstance.controls().autoRotateSpeed = 0.35; // Speed in degrees per frame (60fps)
-    // Hide overlay on user interaction start (drag, zoom, etc.)
-    globeInstance.controls().addEventListener('start', () => setShowOverlay(false));
+  // Handle any interaction to hide overlay
+  const handleInteraction = () => {
+    setShowOverlay(false);
   };
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
       <ReactGlobe
-      width="100%"
-      height="100%"
-      globeImageUrl={globeOptions.globeImageUrl}
-      emissiveImageUrl={globeOptions.emissiveImageUrl}
-      emissiveIntensity={globeOptions.emissiveIntensity}
-      bumpImageUrl={globeOptions.bumpImageUrl}
-      backgroundImageUrl={globeOptions.backgroundImageUrl}
-      backgroundColor={globeOptions.backgroundColor}
-      atmosphereColor={globeOptions.atmosphereColor}
-      atmosphereAltitude={globeOptions.atmosphereAltitude}
-      pointsData={markers as Marker[]}
-      pointLat={(d: Marker) => d.coordinates[0]}
-      pointLng={(d: Marker) => d.coordinates[1]}
-      pointColor={(): string => '#ffdd00'} // Yellow for visibility
-      pointRadius={globeOptions.pointRadius}
-      pointAltitude={globeOptions.pointAltitude}
-      pointLabel={(d: Marker) => `${d.city}, ${d.country}<br>Population: ${d.population}`} // Tooltip content
-      cameraRotateSpeed={globeOptions.cameraRotateSpeed}
-      focusAnimationDuration={globeOptions.focusAnimationDuration}
-      onGlobeReady={handleGlobeReady}
-      onClickMarker={(marker: Marker) => console.log(`Clicked: ${marker.city}`)}
-      animateIn={true}
+        width="100%"
+        height="100%"
+        globeImageUrl={dayTextureUrl}
+        backgroundImageUrl={backgroundImageUrl}
+        backgroundColor="rgba(0,0,0,0)"
+        atmosphereColor="lightblue"
+        atmosphereAltitude={0.15}
+        pointsData={markers}
+        pointLat={(d: Marker) => d.coordinates[0]}
+        pointLng={(d: Marker) => d.coordinates[1]} // Corrected to use longitude
+        pointColor={() => '#ffdd00'}
+        pointRadius={0.3}
+        pointAltitude={0.01}
+        pointLabel={(d: Marker) => `${d.city}, ${d.country} | Population: ${d.population}`}
+        onGlobeReady={handleGlobeReady}
+        onPointClick={handleInteraction}
+        onGlobeClick={handleInteraction}
+        onZoom={handleInteraction}
+        animateIn={true}
       />
       {showOverlay && (
-      <div
-        style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        color: 'white',
-        textAlign: 'center',
-        pointerEvents: 'none', // Allow clicks through to globe if needed
-        zIndex: 1,
-        } as React.CSSProperties}
-      >
-        <h1>Welcome to MyWorld Explorer</h1>
-        <p>Interact with the globe to explore cities around the world.</p>
-        <p>The globe auto-rotates to simulate day and night transitions.</p>
-      </div>
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            textAlign: 'center',
+            pointerEvents: 'none',
+            zIndex: 1,
+            background: 'rgba(0,0,0,0.5)',
+            padding: '20px',
+            borderRadius: '10px',
+          }}
+        >
+          <h1>Welcome to Our Global Explorer</h1>
+          <p>Interact with the globe to explore cities around the world.</p>
+          <p>The globe auto-rotates, simulating day and night transitions.</p>
+        </div>
       )}
     </div>
   );
