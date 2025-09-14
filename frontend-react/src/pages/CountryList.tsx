@@ -19,7 +19,7 @@ const CountryList: React.FC = () => {
   
 
   return (
-    <div>
+    <div className='p-4 mt-16'>
       <p>List of Countries:</p>
 
       <SearchInput

@@ -23,7 +23,7 @@ export default function CountryLanguagesList() {
   if (error) return <p>There was an error loading the languages</p>;
 
   return (
-    <div>
+    <div className="p-4 mt-16">
       <h1>List of Languages</h1>
         <SearchInput
             value={search}

@@ -11,7 +11,7 @@ function App() {
   return (
     <BrowserRouter>
     <TopNav />
-      <div className="p-4 mt-16">
+      <div className="">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/cities" element={<CitiesList />} />

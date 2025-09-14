@@ -19,7 +19,7 @@ export default function CitiesList(){
     
     if(error) return <p>Error loading cities</p>
     return(
-        <div>
+        <div className='p-4 mt-16'>
             <p>List of Cities:</p>
             <p>Total: {data?.pagination?.total}</p>
 
