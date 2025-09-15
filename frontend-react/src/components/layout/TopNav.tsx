@@ -30,6 +30,7 @@ export default function Navbar() {
           </div>
         <ul className={`hidden md:flex space-x-6 ${isScrolled ? 'text-white' : 'text-green-500'}`}>
           <Link className="hover:text-blue-500 cursor-pointer" to="/">Home</Link>
+          <Link className="hover:text-blue-500 cursor-pointer" to="/world-data">Combined Data</Link>
           <Link className="hover:text-blue-500 cursor-pointer" to="/countries">Country</Link>
           <Link className="hover:text-blue-500 cursor-pointer" to="/cities">Cities</Link>
           <Link className="hover:text-blue-500 cursor-pointer" to="/country-languages">Country Languages</Link>
