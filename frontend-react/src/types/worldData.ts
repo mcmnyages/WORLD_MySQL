@@ -43,6 +43,28 @@ export interface WorldDataFilters {
   limit?: number;
 }
 
+export interface WorldData{
+  Code: string;
+  Name: string;
+  Continent: string;
+  Region: string;
+  SurfaceArea: number;
+  Capital: string;
+  Code2: string;
+  GNP: number;
+  GNPOld: number;
+  LocalName: string;
+  GovernmentForm: string;
+  HeadOfState: string;
+  IndepYear: number;
+  Population: number;
+  LifeExpectancy: number;
+  CityID: number;
+  CityName: string;
+  District: string;
+  CityPopulation: number;
+}
+
 export interface WorldDataItem {
   country_code: string;
   country_name: string;
@@ -103,10 +125,8 @@ export interface WorldDataResponse {
 }
 
 export interface FilterOptions {
-  continents: string[];
-  regions: string[];
-  languages: string[];
-  governmentForms: string[];
-  sortOptions: { value: string; label: string }[];
-  fieldCategories: string[];
+  data:string[];
+  filters: WorldDataFilters;
+  statistics: WorldDataStatistics;
+  pagination: PaginationInfo;
 }

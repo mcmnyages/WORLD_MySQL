@@ -20,7 +20,7 @@ export const WorldDataPage: React.FC = () => {
     resetFilters,
     refetch
   } = useWorldData();
-
+console.log('Data in Page:', data);
   if (error) {
     return <ErrorMessage message={error} onRetry={refetch} />;
   }
@@ -42,7 +42,7 @@ export const WorldDataPage: React.FC = () => {
           <div className="lg:col-span-1">
             <FilterPanel
               filters={filters}
-              filterOptions={filterOptions}
+              filterOptions={filterOptions ?? null}
               onFiltersChange={updateFilters}
               onReset={resetFilters}
               loading={loading}
@@ -52,9 +52,9 @@ export const WorldDataPage: React.FC = () => {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
             {/* Statistics Panel */}
-            {data && (
+            {data && filterOptions?.statistics && (
               <StatisticsPanel 
-                statistics={data.statistics}
+                statistics={filterOptions?.statistics}
                 pagination={data.pagination}
               />
             )}
@@ -67,7 +67,6 @@ export const WorldDataPage: React.FC = () => {
               <>
                 <DataTable 
                   data={data.countries} 
-                  groupBy={filters.groupBy}
                 />
 
                 <PaginationControls

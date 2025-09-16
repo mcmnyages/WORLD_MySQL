@@ -25,8 +25,8 @@ class WorldDataApi {
 
   async getFilterOptions(): Promise<FilterOptions> {
     const response = await this.api.get('/countries/filter-options');
-    console.log('Filter options:', response);
-    return response.data.options;
+    console.log('Filter options:', response.data);
+    return response.data;
   }
 }
 

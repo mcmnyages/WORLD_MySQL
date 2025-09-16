@@ -1,77 +1,65 @@
 // hooks/useWorldData.ts
-import { useState, useEffect, useCallback } from 'react';
-import type{ WorldDataFilters, WorldDataResponse, FilterOptions } from '../types/worldData';
+import { useQuery} from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
+import type { WorldDataFilters, WorldDataResponse, FilterOptions } from '../types/worldData';
 import { worldDataApi } from '../api/worldDataApi';
 
+const DEFAULT_FILTERS: WorldDataFilters = {
+  page: 1,
+  limit: 20,
+  sort: 'country_name_asc'
+};
+
 export const useWorldData = () => {
-  const [data, setData] = useState<WorldDataResponse | null>(null);
-  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<WorldDataFilters>({
-    page: 1,
-    limit: 20,
-    sort: 'country_name_asc'
+
+  const [filters, setFilters] = useState<WorldDataFilters>(DEFAULT_FILTERS);
+
+  // Fetch world data with filters
+  const {
+    data,
+    error,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useQuery<WorldDataResponse, Error>({
+    queryKey: ['worldData', filters],
+    queryFn: () => worldDataApi.getWorldData(filters),
+    placeholderData: (previousData) => previousData, // good for paginated UIs
   });
 
-  const fetchData = useCallback(async (newFilters?: Partial<WorldDataFilters>) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const currentFilters = newFilters ? { ...filters, ...newFilters } : filters;
-      const response = await worldDataApi.getWorldData(currentFilters);
-      setData(response);
-      setFilters(currentFilters);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
+  // Fetch filter options (once)
+  const {
+    data: filterOptions,
+  } = useQuery<FilterOptions, Error>({
+    queryKey: ['worldDataFilterOptions'],
+    queryFn: () => worldDataApi.getFilterOptions(),
+    staleTime: Infinity,
+  });
 
-  const fetchFilterOptions = useCallback(async () => {
-    try {
-      const options = await worldDataApi.getFilterOptions();
-      setFilterOptions(options);
-    } catch (err) {
-      console.error('Failed to fetch filter options:', err);
-    }
+  // Update filters
+  const updateFilters = useCallback((newFilters: Partial<WorldDataFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
   }, []);
 
-  const updateFilters = useCallback((newFilters: Partial<WorldDataFilters>) => {
-    const updatedFilters = { ...filters, ...newFilters, page: 1 }; // Reset to first page
-    fetchData(updatedFilters);
-  }, [fetchData, filters]);
-
+  // Change page
   const changePage = useCallback((page: number) => {
-    fetchData({ page });
-  }, [fetchData]);
+    setFilters(prev => ({ ...prev, page }));
+  }, []);
 
+  // Reset filters
   const resetFilters = useCallback(() => {
-    const defaultFilters: WorldDataFilters = {
-      page: 1,
-      limit: 20,
-      sort: 'country_name_asc'
-    };
-    setFilters(defaultFilters);
-    fetchData(defaultFilters);
-  }, [fetchData]);
-
-  useEffect(() => {
-    fetchData();
-    fetchFilterOptions();
+    setFilters(DEFAULT_FILTERS);
   }, []);
 
   return {
     data,
     filterOptions,
-    loading,
-    error,
     filters,
+    loading: isLoading || isFetching,
+    error: error?.message ?? null,
     updateFilters,
     changePage,
     resetFilters,
-    refetch: () => fetchData()
+    refetch,
   };
 };

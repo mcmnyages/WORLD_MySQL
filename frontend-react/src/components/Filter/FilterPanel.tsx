@@ -71,7 +71,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               onChange={handleInputChange('continent')}
             >
               <option value="">All Continents</option>
-              {filterOptions?.continents.map(continent => (
+              {filterOptions?.continents?.map(continent => (
                 <option key={continent} value={continent}>
                   {continent}
                 </option>
@@ -89,7 +89,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               onChange={handleInputChange('region')}
             >
               <option value="">All Regions</option>
-              {filterOptions?.regions.map(region => (
+              {filterOptions?.regions?.map(region => (
                 <option key={region} value={region}>
                   {region}
                 </option>
@@ -183,7 +183,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               onChange={handleInputChange('language')}
             >
               <option value="">All Languages</option>
-              {filterOptions?.languages.slice(0, 50).map(language => (
+              {filterOptions?.languages?.slice(0, 50).map(language => (
                 <option key={language} value={language}>
                   {language}
                 </option>
@@ -218,7 +218,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               value={filters.sort || 'country_name_asc'}
               onChange={handleInputChange('sort')}
             >
-              {filterOptions?.sortOptions.map(option => (
+              {filterOptions?.sortOptions?.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
